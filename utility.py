@@ -48,15 +48,15 @@ def load_data_and_labels():
     positive_examples = []
     for file in os.listdir('with_datarace'):
         filename = os.fsdecode(file)
-        ast_file = open('with_datarace\\' + filename, 'r')
+        ast_file = open('with_datarace/' + filename, 'r')
         token_vector = ast_file.read()
         positive_examples.append(token_vector)
         file_names.append(filename)
 
     negative_examples = []
-    for file in os.listdir('without_datarace\\'):
+    for file in os.listdir('without_datarace/'):
         filename = os.fsdecode(file)
-        ast_file = open('without_datarace\\' + filename, 'r')
+        ast_file = open('without_datarace/' + filename, 'r')
         token_vector = ast_file.read()
         negative_examples.append(token_vector)  # List of lists
         file_names.append(filename)
@@ -83,7 +83,7 @@ def pad_sentences(sentences, padding_word="PAD"):
     Returns padded token vectors.
     """
     sequence_length = max(len(x) for x in sentences)
-    print('vector size: ' + str(sequence_length))
+    # print('vector size: ' + str(sequence_length))
     global trainset_average_length
     trainset_average_length = sequence_length
     padded_sentences = []
@@ -122,7 +122,7 @@ def average_length(sentences, padding_word="PAD"):
             averaged_sentences.append(new_sentence)
         else:
             averaged_sentences.append(sentence)
-    print('Average Length is: ' + str(average))
+    # print('Average Length is: ' + str(average))
     return averaged_sentences
 
 
@@ -238,18 +238,18 @@ def load_data(avg_len=False, load_saved_data=False, load_testdata=False):
         x, y, vocabulary, vocabulary_inv = load_test_data()
 
     elif load_saved_data:
-        print("Loading data from previously saved data")
+        # print("Loading data from previously saved data")
         x, y, vocabulary, vocabulary_inv = load_prev_saved_data()
     else:
-        print("Loading and prosseing token vectors")
+        # print("Loading and processing token vectors")
         # Load and preprocess data
         sentences, labels = load_data_and_labels()
         if avg_len:
             sentences_padded = average_length(sentences)
-            print("Padding all vectors to avg length")
+            # print("Padding all vectors to avg length")
         else:
             sentences_padded = pad_sentences(sentences)
-            print("Padding all vectors to the longest length")
+            # print("Padding all vectors to the longest length")
 
         vocabulary, vocabulary_inv = build_vocab(sentences_padded)
         x, y = build_input_data(sentences_padded, labels, vocabulary)
@@ -285,7 +285,7 @@ def create_source_lines_values(ast_as_list, ast_intrst_lines, method="only_paren
         for ast_line_number, impact_probab in ast_intrst_lines.items():
             # we discard padding tokens
             if ast_line_number < len(ast_as_list):
-                print(ast_as_list[ast_line_number])
+                # print(ast_as_list[ast_line_number])
                 match = re.search(r'<line:(\S+):', ast_as_list[ast_line_number])
                 if match:
                     lines_probability[match.group(1)] = impact_probab
@@ -294,28 +294,28 @@ def create_source_lines_values(ast_as_list, ast_intrst_lines, method="only_paren
     else:
         for ast_line_number, impact_probab in ast_intrst_lines.items():
             if ast_line_number < len(ast_as_list):
-                print(ast_line_number)
+                # print(ast_line_number)
                 match = re.search(r'<line:(\S+):', ast_as_list[ast_line_number])
                 if match:
-                    print("found the source code line number")
+                    # print("found the source code line number")
                     source_code_line = match.group(1)
-                    print("source code line is " + str(source_code_line))
+                    # print("source code line is " + str(source_code_line))
                     lines_probability[source_code_line] = []
                     lines_probability[source_code_line].append(impact_probab)
                 else:
-                    print("line number not found")
+                    # print("line number not found")
                     current_line = ast_line_number
                     while match is None:
                         current_line -= 1
                         if current_line < 0:
                             break
-                        print("going to line " + str(current_line) + " in AST")
+                        # print("going to line " + str(current_line) + " in AST")
                         match = re.search(r'<line:(\S+):', ast_as_list[current_line])
                     if current_line < 0:
                         continue
                     source_code_line = match.group(1)
-                    print("found the source code line number")
-                    print("source code line is " + str(source_code_line))
+                    # print("found the source code line number")
+                    # print("source code line is " + str(source_code_line))
                     if source_code_line not in lines_probability:
                         lines_probability[source_code_line] = []
                         lines_probability[source_code_line].append(impact_probab)
@@ -347,13 +347,13 @@ def highlight_source_code(filename, source_code_intrst_lines, method):
         source_code_list[i] = source_code_list[i].replace('<', '&lt;');
         source_code_list[i] = source_code_list[i].replace('>', '&#62;');
     for line_number, probab in source_code_intrst_lines.items():
-        print(line_number, probab)
+        # print(line_number, probab)
         actual_line_num = int(line_number) - 1
         if actual_line_num < len(source_code_list):
             actual_content = source_code_list[actual_line_num]
             source_code_list[actual_line_num] = "<span style=\"background-color: rgba(255, 0, 0, " + str(
                 probab) + ");\">" + actual_content + "</span>"
-            print(source_code_list[actual_line_num])
+            # print(source_code_list[actual_line_num])
 
     with open(output_html + filename + '_' + method + '.html', 'w') as f:
         f.write("<pre>");

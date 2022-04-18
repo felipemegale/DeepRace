@@ -1,0 +1,79 @@
+<pre>int main()
+{
+<span style="background-color: rgba(255, 0, 0, 0.03819950770994751);">  int threadsnum = 1;</span>
+<span style="background-color: rgba(255, 0, 0, 0.03819950770994751);">  double start;</span>
+<span style="background-color: rgba(255, 0, 0, 0.017277496139740833);">  double end;</span>
+<span style="background-color: rgba(255, 0, 0, 0.012320179274702525);">  double time;</span>
+<span style="background-color: rgba(255, 0, 0, 0.03529598558640146);">  double startchuan;</span>
+  double endchuan;
+<span style="background-color: rgba(255, 0, 0, 0.0007877728027807507);">  double timechuan;</span>
+  int i;
+<span style="background-color: rgba(255, 0, 0, 0.049166201336433346);">  int j;</span>
+<span style="background-color: rgba(255, 0, 0, 0.006434322477627319);">  int flg;</span>
+<span style="background-color: rgba(255, 0, 0, 0.0031743973867932596);">  int sum = 0;</span>
+<span style="background-color: rgba(255, 0, 0, 0.00012848868725612306);">  int a = 0;</span>
+  FILE *fp;
+  fp = fopen("result", "w");
+<span style="background-color: rgba(255, 0, 0, 0.041400665403422465);">  startchuan = omp_get_wtime();</span>
+  for (i = 2; i &lt;= 100000; i++)
+  {
+    flg = 1;
+    for (j = 2; j &lt; i; j++)
+    {
+<span style="background-color: rgba(255, 0, 0, 0.0112826445348162);">      if ((i % j) == 0)</span>
+      {
+<span style="background-color: rgba(255, 0, 0, 0.013369795815300733);">        flg = 0;</span>
+        break;
+      }
+
+    }
+
+<span style="background-color: rgba(255, 0, 0, 0.01851248098669167);">    if (flg)</span>
+<span style="background-color: rgba(255, 0, 0, 0.005590947198015783);">    {</span>
+<span style="background-color: rgba(255, 0, 0, 0.018235681768764778);">      sum += i;</span>
+<span style="background-color: rgba(255, 0, 0, 0.011053633469572333);">      a = a + 1;</span>
+      fprintf(fp, "%d\t", i);
+    }
+
+  }
+
+  endchuan = omp_get_wtime();
+  timechuan = endchuan - startchuan;
+<span style="background-color: rgba(255, 0, 0, 0.013369795815300733);">  printf("串行运行时间 = %13.5f seconds\n", timechuan);</span>
+  for (threadsnum = 1; threadsnum &lt;= 8; threadsnum++)
+  {
+    omp_set_num_threads(threadsnum);
+<span style="background-color: rgba(255, 0, 0, 0.0024871895395364163);">    start = omp_get_wtime();</span>
+<span style="background-color: rgba(255, 0, 0, 0.0024871895395364163);">    #pragma omp parallel for</span>
+<span style="background-color: rgba(255, 0, 0, 0.013369795815300733);">    for (i = 2; i &lt;= 100000; i++)</span>
+    {
+      if (i == 2)
+      {
+        printf("线程数为%5d\n", omp_get_num_threads());
+      }
+
+      flg = 1;
+      for (j = 2; j &lt; i; j++)
+      {
+        if ((i % j) == 0)
+        {
+          flg = 0;
+          break;
+        }
+
+      }
+
+    }
+
+    end = omp_get_wtime();
+    time = end - start;
+    printf("并行时间为 %13.5f seconds\n", time);
+    printf("加速比为 %13.5f\n ", time / timechuan);
+  }
+
+  printf("%d\n", a);
+  fclose(fp);
+  return 0;
+}
+
+</pre>
