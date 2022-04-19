@@ -46,174 +46,176 @@ params = {
 }
 
 
-print('Loading data')
-x, y, vocabulary, vocabulary_inv = load_data(avg_len=False, load_saved_data=False, load_testdata=False)
-# X_test = x
-# y_test = y
-X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
-# 64, [3, 4, 5], 512, 0.25, 24, 4
-sequence_length = x.shape[1]
-print('sequence length = {}'.format(sequence_length))
-vocabulary_size = len(vocabulary_inv)
-embedding_dim = 64
-filter_sizes = [3,4,5]
-num_filters = 512
-drop = 0.25
-epochs = 24
-batch_size = 4
+datasets=["OMP_Critical", "OMP_Private", "POSIX"]
 
-# this returns a tensor
-print("Creating Model...")
-inputs = Input(shape=(sequence_length,), dtype='int32')
-embedding = Embedding(input_dim=vocabulary_size, output_dim=embedding_dim, input_length=sequence_length)(inputs)
+for folder_name in datasets:
+    print(f'Loading data from {folder_name}')
+    x, y, vocabulary, vocabulary_inv = load_data(avg_len=False, load_saved_data=False, load_testdata=False, folder_name=folder_name)
+    # X_test = x
+    # y_test = y
+    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+    # 64, [3, 4, 5], 512, 0.25, 24, 4
+    sequence_length = x.shape[1]
+    print('sequence length = {}'.format(sequence_length))
+    vocabulary_size = len(vocabulary_inv)
+    embedding_dim = 64
+    filter_sizes = [3,4,5]
+    num_filters = 512
+    drop = 0.25
+    epochs = 24
+    batch_size = 4
 
-conv_list = list()
-for ftr in filter_sizes:
-    conv = Conv1D(num_filters, kernel_size=ftr, padding='same', kernel_initializer='normal', activation='relu')(embedding)
-    maxpool = MaxPooling1D(pool_size=(sequence_length - ftr + 1), padding='valid')(conv)
-    conv_list.append(maxpool)
+    # this returns a tensor
+    print("Creating Model...")
+    inputs = Input(shape=(sequence_length,), dtype='int32')
+    embedding = Embedding(input_dim=vocabulary_size, output_dim=embedding_dim, input_length=sequence_length)(inputs)
 
-concatenated_tensor = Concatenate(axis=1)(conv_list)
+    conv_list = list()
+    for ftr in filter_sizes:
+        conv = Conv1D(num_filters, kernel_size=ftr, padding='same', kernel_initializer='normal', activation='relu')(embedding)
+        maxpool = MaxPooling1D(pool_size=(sequence_length - ftr + 1), padding='valid')(conv)
+        conv_list.append(maxpool)
 
-flatten = Flatten()(concatenated_tensor)
-dropout = Dropout(drop)(flatten)
-output = Dense(units=2, activation='softmax')(dropout)
+    concatenated_tensor = Concatenate(axis=1)(conv_list)
 
-model = Model(inputs=inputs, outputs=output)
+    flatten = Flatten()(concatenated_tensor)
+    dropout = Dropout(drop)(flatten)
+    output = Dense(units=2, activation='softmax')(dropout)
 
-checkpoint = ModelCheckpoint('weights.{epoch:03d}-{val_acc:.4f}.hdf5', monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
-adam = Adam(learning_rate=1e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
-model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
+    model = Model(inputs=inputs, outputs=output)
 
-# Model summary
-print(model.summary())
+    checkpoint = ModelCheckpoint('weights.{epoch:03d}-{val_acc:.4f}.hdf5', monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
+    adam = Adam(learning_rate=1e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+    model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
 
-print("Traning Model...")
-model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.2, verbose=1)  # starts training
+    # Model summary
+    print(model.summary())
 
-# Storing the model for future use
-# serialize model to JSON
-model_json = model.to_json()
-with open("cnn_model.json", "w") as json_file:
-    json_file.write(model_json)
-# serialize weights to HDF5
-model.save_weights("cnn_model.h5")
-print("Saved model to disk")
+    print("Traning Model...")
+    model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.2, verbose=1)  # starts training
 
-# load json and create model
-json_file = open('cnn_model.json', 'r')
-loaded_model_json = json_file.read()
-json_file.close()
-loaded_model = model_from_json(loaded_model_json)
-# load weights into new model
-loaded_model.load_weights("cnn_model.h5")
-print("Loaded model from disk")
+    # Storing the model for future use
+    # serialize model to JSON
+    model_json = model.to_json()
+    with open("cnn_model.json", "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights("cnn_model.h5")
+    print("Saved model to disk")
 
-loaded_model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
+    # load json and create model
+    json_file = open('cnn_model.json', 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model = model_from_json(loaded_model_json)
+    # load weights into new model
+    loaded_model.load_weights("cnn_model.h5")
+    print("Loaded model from disk")
 
-score = loaded_model.evaluate(X_test, y_test, verbose=1)
-print("EVALUATE",score)
+    loaded_model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
 
-print("LEN FILE NAMES",len(file_names))
+    score = loaded_model.evaluate(X_test, y_test, verbose=1)
+    print("EVALUATE",score)
 
-# for i, x in enumerate(file_names):
-#     print(x)
-#     print(i)
-    # print(loaded_model.predict(X_test[i:i+1]))
+    print("LEN FILE NAMES",len(file_names))
 
-y_pred = loaded_model.predict(X_test[12:30])
-print("Y_PRED",y_pred)
+    # for i, x in enumerate(file_names):
+    #     print(x)
+    #     print(i)
+        # print(loaded_model.predict(X_test[i:i+1]))
 
-# # Import the modules from `sklearn.metrics`
-# from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score, cohen_kappa_score
+    y_pred = loaded_model.predict(X_test[12:30])
+    print(f"{folder_name} => Y_PRED",y_pred)
 
-# # Confusion matrix
-# print(confusion_matrix(y_test[:, 0], y_pred[:, 0]))
-# # Precision 
-# print(precision_score(y_test[:, 0], y_pred[:, 0]))
-# # Recall
-# print(recall_score(y_test[:, 0], y_pred[:, 0]))
-# # F1 score
-# print(f1_score(y_test[:, 0], y_pred[:, 0]))
-# # # Cohen's kappa
-# # print(cohen_kappa_score(y_test, y_pred))
+    # Import the modules from `sklearn.metrics`
+    from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score, cohen_kappa_score
 
-# y_pred[:, :] = y_pred[:, :] > 0.5
-# cm = confusion_matrix(y_test[:, 0], y_pred[:, 0])
-# print(cm)
+    # Confusion matrix
+    print("Confusion Matrix", confusion_matrix(y_test[:, 0], y_pred[:, 0]))
+    # Precision 
+    print("Precision",precision_score(y_test[:, 0], y_pred[:, 0]))
+    # Recall
+    print("Recall",recall_score(y_test[:, 0], y_pred[:, 0]))
+    # F1 score
+    print("F1", f1_score(y_test[:, 0], y_pred[:, 0]))
+    # # Cohen's kappa
+    print("Cohen's Kappa",cohen_kappa_score(y_test, y_pred))
 
-
-from keras import backend as K
-# with a Sequential model
-get_3rd_layer_output = K.function([loaded_model.layers[0].input], [loaded_model.layers[2].output, 
-                                                                loaded_model.layers[3].output,
-                                                                loaded_model.layers[4].output])
-
-print(loaded_model.layers[5].output)
-# sys.exit("BREAKING")
-sample = 10
-
-# predict the sample
-y_pred = loaded_model.predict(np.array([X_test[sample]]))
-print(y_pred)
-
-predicted_label = 0 if (y_pred[0][0] > y_pred[0][1]) else 1
-print('predicted label: {}'.format(predicted_label))
+    y_pred[:, :] = y_pred[:, :] > 0.5
+    cm = confusion_matrix(y_test[:, 0], y_pred[:, 0])
+    print(cm)
 
 
-# getting the intermediate output
-conv_output1 = (get_3rd_layer_output([np.array([X_test[sample]])])[0][0]).T
-conv_output2 = (get_3rd_layer_output([np.array([X_test[sample]])])[1][0]).T
-conv_output3 = (get_3rd_layer_output([np.array([X_test[sample]])])[2][0]).T
-print("shape1",conv_output1.shape)
-print("shape2",conv_output2.shape)
-print("shape3",conv_output3.shape)
-conv_output_concat = np.concatenate((conv_output1, conv_output2, conv_output3))
-# print(conv_output_concat.shape)
+    from keras import backend as K
+    # with a Sequential model
+    get_3rd_layer_output = K.function([loaded_model.layers[0].input], [loaded_model.layers[2].output, 
+                                                                    loaded_model.layers[3].output,
+                                                                    loaded_model.layers[4].output])
 
-# get the weights of the last layer
-last_layer_w = loaded_model.get_weights()[-2]
-# print(last_layer_w.shape) # (1536, 2)
+    print(loaded_model.layers[5].output)
+    sample = 10
 
-# print(last_layer_w[1,1])
-# print(conv_output_concat[1,:].shape)
+    # predict the sample
+    y_pred = loaded_model.predict(np.array([X_test[sample]]))
+    print(y_pred)
 
-# generate the heat map
-heat_map = np.zeros(sequence_length)
+    predicted_label = 0 if (y_pred[0][0] > y_pred[0][1]) else 1
+    print('predicted label: {}'.format(predicted_label))
 
-for i in range(num_filters * len(filter_sizes)):
-    heat_map += last_layer_w[i,predicted_label] * conv_output_concat[i,:] # here should be the convolutional layer that this wieght related to the maxpooling value related to it.
 
-# show the heat map
-# print(relu_fun(heat_map).tolist()[:500])
+    # getting the intermediate output
+    conv_output1 = (get_3rd_layer_output([np.array([X_test[sample]])])[0][0]).T
+    conv_output2 = (get_3rd_layer_output([np.array([X_test[sample]])])[1][0]).T
+    conv_output3 = (get_3rd_layer_output([np.array([X_test[sample]])])[2][0]).T
+    print("shape1",conv_output1.shape)
+    print("shape2",conv_output2.shape)
+    print("shape3",conv_output3.shape)
+    conv_output_concat = np.concatenate((conv_output1, conv_output2, conv_output3))
+    # print(conv_output_concat.shape)
 
-# keep track of the line of token in AST and also its impact probability
-ast_intrst_lines = {}
+    # get the weights of the last layer
+    last_layer_w = loaded_model.get_weights()[-2]
+    # print(last_layer_w.shape) # (1536, 2)
 
-nums = relu_fun(heat_map).tolist()
-for i in range(len(nums)):
-    if nums[i] > 0:
-        ast_intrst_lines[i] = nums[i]
-        # print(str(i) + '\n')
-        
-# reading the untouched AST 
-ast = read_ast(file_names[sample])
+    # print(last_layer_w[1,1])
+    # print(conv_output_concat[1,:].shape)
 
-#this dictionary keeps the source code line and its impact value on classification
-source_lines_probability = create_source_lines_values(ast, ast_intrst_lines, method="maximum")
-highlight_source_code(file_names[sample], source_lines_probability, method="MAX")
+    # generate the heat map
+    heat_map = np.zeros(sequence_length)
 
-source_lines_probability = create_source_lines_values(ast, ast_intrst_lines, method="average")
-highlight_source_code(file_names[sample], source_lines_probability, method="AVG")
+    for i in range(num_filters * len(filter_sizes)):
+        heat_map += last_layer_w[i,predicted_label] * conv_output_concat[i,:] # here should be the convolutional layer that this wieght related to the maxpooling value related to it.
 
-source_lines_probability = create_source_lines_values(ast, ast_intrst_lines, method="only_parent")
-highlight_source_code(file_names[sample], source_lines_probability, method="PARENT")
+    # show the heat map
+    # print(relu_fun(heat_map).tolist()[:500])
 
-def softmax(x):
-    '''
-    Compute softmax values for each sets of scores in x.
-    '''
-    return np.exp(x) / np.sum(np.exp(x), axis=0) * 1000
+    # keep track of the line of token in AST and also its impact probability
+    ast_intrst_lines = {}
 
-print("Printing Softmax")
-print(softmax(relu_fun(heat_map)).tolist()[:500])
+    nums = relu_fun(heat_map).tolist()
+    for i in range(len(nums)):
+        if nums[i] > 0:
+            ast_intrst_lines[i] = nums[i]
+            # print(str(i) + '\n')
+            
+    # reading the untouched AST 
+    ast = read_ast(file_names[sample])
+
+    #this dictionary keeps the source code line and its impact value on classification
+    source_lines_probability = create_source_lines_values(ast, ast_intrst_lines, method="maximum")
+    highlight_source_code(file_names[sample], source_lines_probability, method="MAX")
+
+    source_lines_probability = create_source_lines_values(ast, ast_intrst_lines, method="average")
+    highlight_source_code(file_names[sample], source_lines_probability, method="AVG")
+
+    source_lines_probability = create_source_lines_values(ast, ast_intrst_lines, method="only_parent")
+    highlight_source_code(file_names[sample], source_lines_probability, method="PARENT")
+
+    def softmax(x):
+        '''
+        Compute softmax values for each sets of scores in x.
+        '''
+        return np.exp(x) / np.sum(np.exp(x), axis=0) * 1000
+
+    print("Printing Softmax")
+    print(softmax(relu_fun(heat_map)).tolist()[:500])

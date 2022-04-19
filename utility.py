@@ -39,24 +39,24 @@ def clean_str(string):
     return string.strip().lower()
 
 
-def load_data_and_labels():
+def load_data_and_labels(folder_name):
     """
     Loads polarity data from files, splits the data into tokens and generates labels.
     Returns split vectos and labels.
     """
     # Load data from files
     positive_examples = []
-    for file in os.listdir('with_datarace'):
+    for file in os.listdir(f'Data/AST/{folder_name}/with_datarace'):
         filename = os.fsdecode(file)
-        ast_file = open('with_datarace/' + filename, 'r')
+        ast_file = open(f'Data/AST/{folder_name}/with_datarace/' + filename, 'r')
         token_vector = ast_file.read()
         positive_examples.append(token_vector)
         file_names.append(filename)
 
     negative_examples = []
-    for file in os.listdir('without_datarace/'):
+    for file in os.listdir(f'Data/AST/{folder_name}/without_datarace'):
         filename = os.fsdecode(file)
-        ast_file = open('without_datarace/' + filename, 'r')
+        ast_file = open(f'Data/AST/{folder_name}/without_datarace/' + filename, 'r')
         token_vector = ast_file.read()
         negative_examples.append(token_vector)  # List of lists
         file_names.append(filename)
@@ -211,11 +211,12 @@ def load_prev_saved_data():
     return [x, y, vocabulary, vocabulary_inv]
 
 
-def load_test_data():
-    sentences, labels = load_data_and_labels()
+def load_test_data(folder_name):
+    sentences, labels = load_data_and_labels(folder_name)
     sentences_padded = average_length(sentences)
 
     with open(save_dest + 'vocabulary.pkl', 'rb') as f:
+        print("Pickle load", f)
         vocabulary = pickle.load(f)
         f.close()
 
@@ -228,14 +229,14 @@ def load_test_data():
     return [x, y, vocabulary, vocabulary_inv]
 
 
-def load_data(avg_len=False, load_saved_data=False, load_testdata=False):
+def load_data(avg_len=False, load_saved_data=False, load_testdata=False, folder_name="./"):
     """
     Loads and preprocessed data for the dataset.
     Returns input vectors, labels, vocabulary, and inverse vocabulary.
     """
 
     if load_testdata:
-        x, y, vocabulary, vocabulary_inv = load_test_data()
+        x, y, vocabulary, vocabulary_inv = load_test_data(folder_name)
 
     elif load_saved_data:
         # print("Loading data from previously saved data")
@@ -243,7 +244,7 @@ def load_data(avg_len=False, load_saved_data=False, load_testdata=False):
     else:
         # print("Loading and processing token vectors")
         # Load and preprocess data
-        sentences, labels = load_data_and_labels()
+        sentences, labels = load_data_and_labels(folder_name)
         if avg_len:
             sentences_padded = average_length(sentences)
             # print("Padding all vectors to avg length")
