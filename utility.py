@@ -46,17 +46,21 @@ def load_data_and_labels(folder_name):
     """
     # Load data from files
     positive_examples = []
-    for file in os.listdir(f'Data/AST/{folder_name}/with_datarace'):
+    if folder_name:
+        folder=f'Data/AST/{folder_name}/'
+    else:
+        folder=""
+    for file in os.listdir(f'{folder}with_datarace'):
         filename = os.fsdecode(file)
-        ast_file = open(f'Data/AST/{folder_name}/with_datarace/' + filename, 'r')
+        ast_file = open(f'{folder}with_datarace/' + filename, 'r')
         token_vector = ast_file.read()
         positive_examples.append(token_vector)
         file_names.append(filename)
 
     negative_examples = []
-    for file in os.listdir(f'Data/AST/{folder_name}/without_datarace'):
+    for file in os.listdir(f'{folder}without_datarace'):
         filename = os.fsdecode(file)
-        ast_file = open(f'Data/AST/{folder_name}/without_datarace/' + filename, 'r')
+        ast_file = open(f'{folder}without_datarace/' + filename, 'r')
         token_vector = ast_file.read()
         negative_examples.append(token_vector)  # List of lists
         file_names.append(filename)
@@ -229,7 +233,7 @@ def load_test_data(folder_name):
     return [x, y, vocabulary, vocabulary_inv]
 
 
-def load_data(avg_len=False, load_saved_data=False, load_testdata=False, folder_name="./"):
+def load_data(avg_len=False, load_saved_data=False, load_testdata=False, folder_name=""):
     """
     Loads and preprocessed data for the dataset.
     Returns input vectors, labels, vocabulary, and inverse vocabulary.
