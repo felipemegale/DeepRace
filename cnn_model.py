@@ -14,16 +14,12 @@ drop = 0.5
 epochs = 16
 batch_size = 4
 '''
-import csv
-from itertools import product
-import sys
-from tkinter import W
-from keras.layers import Input, Dense, Embedding, Conv2D, MaxPool2D, Conv1D
-from keras.layers import Reshape, Flatten, Dropout, Concatenate
+from random import randint
+from keras.layers import Input, Dense, Embedding, Conv1D
+from keras.layers import Flatten, Dropout, Concatenate
 from keras.callbacks import ModelCheckpoint
-from keras.layers import AveragePooling2D, MaxPooling2D, ZeroPadding2D, MaxPooling1D
+from keras.layers import MaxPooling1D
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import layers
 from keras.models import Model, model_from_json
 from sklearn.model_selection import train_test_split
 import os
@@ -53,7 +49,7 @@ for folder_name in datasets:
     x, y, vocabulary, vocabulary_inv = load_data(avg_len=False, load_saved_data=False, load_testdata=False, folder_name=folder_name)
     # X_test = x
     # y_test = y
-    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=randint(1,100))
     # 64, [3, 4, 5], 512, 0.25, 24, 4
     sequence_length = x.shape[1]
     logger.info('sequence length = {}'.format(sequence_length))

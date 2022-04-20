@@ -7,18 +7,17 @@
 1024 LSTM, 28 epochs: Y_PRED [[0.97844124 0.02155874]] (overfitted in two last epochs)
 1024 LSTM, 24 epochs: Y_PRED [[0.84612614 0.1538739 ]]
 '''
-from keras.layers import Input, Dense, Embedding, Conv2D, MaxPool2D, Conv1D, LSTM
-from keras.layers import Reshape, Flatten, Dropout, Concatenate
+from random import randint
+from keras.layers import Input, Dense, Embedding, Conv1D, LSTM
+from keras.layers import Flatten, Dropout
 from keras.callbacks import ModelCheckpoint
-from keras.layers import AveragePooling2D, MaxPooling2D, ZeroPadding2D, MaxPooling1D
+from keras.layers import MaxPooling1D
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras import layers, models
-from keras.models import Model, model_from_json
+from tensorflow.keras import models
+from keras.models import model_from_json
 from sklearn.model_selection import train_test_split
 import os
-import sys
 import numpy as np
-import sys
 
 from utility import *
 
@@ -30,12 +29,12 @@ def relu_fun(list_):
 datasets=["OMP_Critical", "OMP_Private", "POSIX"]
 
 for folder_name in datasets:
-    logger = setup_logger(f'{folder_name}_seq_model', f'{folder_name}_seq_model')
-    logger.info('Loading data')
-    x, y, vocabulary, vocabulary_inv = load_data(avg_len=False, load_saved_data=False, load_testdata=False)
+    logger = setup_logger(f'{folder_name}_seq_rnn_model', f'{folder_name}_seq_rnn_model')
+    logger.info(f'Loading data from {folder_name}')
+    x, y, vocabulary, vocabulary_inv = load_data(avg_len=False, load_saved_data=False, load_testdata=False, folder_name=folder_name)
     # X_test = x
     # y_test = y
-    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=randint(1,100))
 
     #print(X_train.shape)
     #sys.exit("Breaking")
@@ -83,7 +82,6 @@ for folder_name in datasets:
     model = models.Sequential()
     model.add(Input(shape=(sequence_length,), dtype='int32'))
     model.add(Embedding(input_dim=vocabulary_size, output_dim=embedding_dim, input_length=sequence_length))
-
     model.add(Conv1D(128, kernel_size=3, padding='same', kernel_initializer='normal', activation='relu'))
     model.add(MaxPooling1D(pool_size=2, padding='valid'))
     model.add(Conv1D(256, kernel_size=4, padding='same', kernel_initializer='normal', activation='relu'))
