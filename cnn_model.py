@@ -45,18 +45,18 @@ params = {
     'batch_size': [2,4,8]
 }
 
-
 datasets=["OMP_Critical", "OMP_Private", "POSIX"]
 
 for folder_name in datasets:
-    print(f'Loading data from {folder_name}')
+    logger = setup_logger(f'{folder_name}_orig_model', f'{folder_name}_orig_model')
+    logger.info(f'Loading data from {folder_name}')
     x, y, vocabulary, vocabulary_inv = load_data(avg_len=False, load_saved_data=False, load_testdata=False, folder_name=folder_name)
     # X_test = x
     # y_test = y
     X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
     # 64, [3, 4, 5], 512, 0.25, 24, 4
     sequence_length = x.shape[1]
-    print('sequence length = {}'.format(sequence_length))
+    logger.info('sequence length = {}'.format(sequence_length))
     vocabulary_size = len(vocabulary_inv)
     embedding_dim = 64
     filter_sizes = [3,4,5]
@@ -66,7 +66,7 @@ for folder_name in datasets:
     batch_size = 4
 
     # this returns a tensor
-    print("Creating Model...")
+    logger.info(f"Creating Model for {folder_name}")
     inputs = Input(shape=(sequence_length,), dtype='int32')
     embedding = Embedding(input_dim=vocabulary_size, output_dim=embedding_dim, input_length=sequence_length)(inputs)
 
@@ -89,35 +89,35 @@ for folder_name in datasets:
     model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
 
     # Model summary
-    print(model.summary())
+    logger.info(model.summary())
 
-    print("Traning Model...")
+    logger.info(f"Traning Model for {folder_name}")
     model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.2, verbose=1)  # starts training
 
     # Storing the model for future use
     # serialize model to JSON
     model_json = model.to_json()
-    with open("cnn_model.json", "w") as json_file:
+    with open(f"cnn_model_{folder_name}.json", "w") as json_file:
         json_file.write(model_json)
     # serialize weights to HDF5
-    model.save_weights("cnn_model.h5")
-    print("Saved model to disk")
+    model.save_weights(f"cnn_model_{folder_name}.h5")
+    logger.info(f"Saved model for {folder_name} to disk")
 
     # load json and create model
-    json_file = open('cnn_model.json', 'r')
+    json_file = open(f'cnn_model_{folder_name}.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     loaded_model = model_from_json(loaded_model_json)
     # load weights into new model
-    loaded_model.load_weights("cnn_model.h5")
-    print("Loaded model from disk")
+    loaded_model.load_weights(f"cnn_model_{folder_name}.h5")
+    logger.info(f"Loaded model for {folder_name} from disk")
 
     loaded_model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
 
     score = loaded_model.evaluate(X_test, y_test, verbose=1)
-    print("EVALUATE",score)
+    logger.info("EVALUATE",score)
 
-    print("LEN FILE NAMES",len(file_names))
+    logger.info("LEN FILE NAMES",len(file_names))
 
     # for i, x in enumerate(file_names):
     #     print(x)
@@ -125,25 +125,31 @@ for folder_name in datasets:
         # print(loaded_model.predict(X_test[i:i+1]))
 
     y_pred = loaded_model.predict(X_test[12:30])
-    print(f"{folder_name} => Y_PRED",y_pred)
+    logger.info(f"{folder_name} => Y_PRED",y_pred)
 
     # Import the modules from `sklearn.metrics`
     from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score, cohen_kappa_score
 
     # Confusion matrix
-    print("Confusion Matrix", confusion_matrix(y_test[:, 0], y_pred[:, 0]))
+    logger.info("confusion matrix:")
+    logger.info(confusion_matrix(y_test[:, 0], y_pred[:, 0]))
     # Precision 
-    print("Precision",precision_score(y_test[:, 0], y_pred[:, 0]))
+    logger.info("precision:")
+    logger.info(precision_score(y_test[:, 0], y_pred[:, 0]))
     # Recall
-    print("Recall",recall_score(y_test[:, 0], y_pred[:, 0]))
+    logger.info("recall:")
+    logger.info(recall_score(y_test[:, 0], y_pred[:, 0]))
     # F1 score
-    print("F1", f1_score(y_test[:, 0], y_pred[:, 0]))
-    # # Cohen's kappa
-    print("Cohen's Kappa",cohen_kappa_score(y_test, y_pred))
+    logger.info("f1:")
+    logger.info(f1_score(y_test[:, 0], y_pred[:, 0]))
+    # Cohen's kappa
+    logger.info("cohen kappa:")
+    logger.info(cohen_kappa_score(y_test, y_pred))
 
     y_pred[:, :] = y_pred[:, :] > 0.5
     cm = confusion_matrix(y_test[:, 0], y_pred[:, 0])
-    print(cm)
+    logger.info("confusion matrix:")
+    logger.info(cm)
 
 
     from keras import backend as K
@@ -152,24 +158,24 @@ for folder_name in datasets:
                                                                     loaded_model.layers[3].output,
                                                                     loaded_model.layers[4].output])
 
-    print(loaded_model.layers[5].output)
+    logger.info(loaded_model.layers[5].output)
     sample = 10
 
     # predict the sample
     y_pred = loaded_model.predict(np.array([X_test[sample]]))
-    print(y_pred)
+    logger.info(y_pred)
 
     predicted_label = 0 if (y_pred[0][0] > y_pred[0][1]) else 1
-    print('predicted label: {}'.format(predicted_label))
+    logger.info('predicted label: {}'.format(predicted_label))
 
 
     # getting the intermediate output
     conv_output1 = (get_3rd_layer_output([np.array([X_test[sample]])])[0][0]).T
     conv_output2 = (get_3rd_layer_output([np.array([X_test[sample]])])[1][0]).T
     conv_output3 = (get_3rd_layer_output([np.array([X_test[sample]])])[2][0]).T
-    print("shape1",conv_output1.shape)
-    print("shape2",conv_output2.shape)
-    print("shape3",conv_output3.shape)
+    logger.info("shape1",conv_output1.shape)
+    logger.info("shape2",conv_output2.shape)
+    logger.info("shape3",conv_output3.shape)
     conv_output_concat = np.concatenate((conv_output1, conv_output2, conv_output3))
     # print(conv_output_concat.shape)
 
@@ -217,5 +223,5 @@ for folder_name in datasets:
         '''
         return np.exp(x) / np.sum(np.exp(x), axis=0) * 1000
 
-    print("Printing Softmax")
-    print(softmax(relu_fun(heat_map)).tolist()[:500])
+    logger.info("Printing Softmax")
+    logger.info(softmax(relu_fun(heat_map)).tolist()[:500])
