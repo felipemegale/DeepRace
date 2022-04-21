@@ -83,7 +83,6 @@ for folder_name in datasets:
     model.add(Input(shape=(sequence_length,), dtype='int32'))
     model.add(Embedding(input_dim=vocabulary_size, output_dim=embedding_dim, input_length=sequence_length))
     model.add(Conv1D(128, kernel_size=3, padding='same', kernel_initializer='normal', activation='relu'))
-<<<<<<< HEAD
     model.add(MaxPooling1D(pool_size=3, padding='valid'))
     model.add(Conv1D(128, kernel_size=4, padding='same', kernel_initializer='normal', activation='relu'))
     model.add(MaxPooling1D(pool_size=4, padding='valid'))
@@ -94,15 +93,6 @@ for folder_name in datasets:
     model.add(Dropout(0.2))
     model.add(Dense(units=256,activation='relu'))
     model.add(Dense(units=128, activation='relu'))
-=======
-    model.add(MaxPooling1D(pool_size=2, padding='valid'))
-    model.add(Conv1D(256, kernel_size=4, padding='same', kernel_initializer='normal', activation='relu'))
-    model.add(MaxPooling1D(pool_size=4, padding='valid'))
-    model.add(Conv1D(512, kernel_size=5, padding='same', kernel_initializer='normal', activation='relu'))
-    model.add(LSTM(1024, return_sequences=True))
-    model.add(Flatten())
-    model.add(Dropout(0.5))
->>>>>>> cd03270ccc743df556c9ec620124b2073ce18d89
     model.add(Dense(units=2, activation='softmax'))
     #inputs = Input(shape=(sequence_length,), dtype='int32')
     #embedding = Embedding(input_dim=vocabulary_size, output_dim=embedding_dim, input_length=sequence_length)(inputs)
@@ -126,13 +116,13 @@ for folder_name in datasets:
     model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
 
     # Model summary
+    logger.info(f'{folder_name} model summary:')
     logger.info(model.summary())
     #sys.exit("TESTING")
 
 
-    logger.info("Traning Model...")
+    logger.info(f"{folder_name}: Traning Model")
     model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.2, verbose=1)  # starts training
-
 
     # Storing the model for future use
     # serialize model to JSON
@@ -141,9 +131,7 @@ for folder_name in datasets:
         json_file.write(model_json)
     # serialize weights to HDF5
     model.save_weights(f"cnn_sequential_rnn_model{folder_name}.h5")
-    print("Saved model to disk")
-
-
+    logger.info(f"{folder_name}: Saved model to disk")
 
     # load json and create model
     json_file = open('cnn_sequential_rnn_model.json', 'r')
@@ -152,16 +140,14 @@ for folder_name in datasets:
     loaded_model = model_from_json(loaded_model_json)
     # load weights into new model
     loaded_model.load_weights("cnn_sequential_rnn_model.h5")
-    logger.info("Loaded model from disk")
+    logger.info(f"{folder_name}: Loaded model from disk")
 
     loaded_model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
 
-
-
     score = loaded_model.evaluate(X_test, y_test, verbose=1)
-    logger.info("EVALUATE",score)
+    logger.info(f"{folder_name}: EVALUATE: {score}")
 
-    logger.info("LEN FILE NAMES", len(file_names))
+    logger.info(f"{folder_name}: LEN FILE NAMES: {len(file_names)}")
 
     # for i, x in enumerate(file_names):
     #     print(x)
@@ -169,30 +155,31 @@ for folder_name in datasets:
     #     print(loaded_model.predict(X_test[i:i+1]))
 
     y_pred = loaded_model.predict(X_test[12:30])
-    logger.info("Y_PRED",y_pred)
+    logger.info(f"{folder_name} => Y_PRED: {y_pred}")
 
     # Import the modules from `sklearn.metrics`
     from sklearn.metrics import confusion_matrix, precision_score, recall_score, f1_score, cohen_kappa_score
 
     # Confusion matrix
-    logger.info("confusion matrix:")
+    logger.info(f"{folder_name}: confusion matrix:")
     logger.info(confusion_matrix(y_test[:, 0], y_pred[:, 0]))
     # Precision 
+    logger.info(f"{folder_name}: precision:")
     logger.info("precision:")
     logger.info(precision_score(y_test[:, 0], y_pred[:, 0]))
     # Recall
-    logger.info("recall:")
+    logger.info(f"{folder_name}: recall:")
     logger.info(recall_score(y_test[:, 0], y_pred[:, 0]))
     # F1 score
-    logger.info("f1:")
+    logger.info(f"{folder_name}: f1:")
     logger.info(f1_score(y_test[:, 0], y_pred[:, 0]))
     # Cohen's kappa
-    logger.info("cohen kappa:")
+    logger.info(f"{folder_name}: cohen kappa:")
     logger.info(cohen_kappa_score(y_test, y_pred))
 
     y_pred[:, :] = y_pred[:, :] > 0.5
     cm = confusion_matrix(y_test[:, 0], y_pred[:, 0])
-    logger.info("confusion matrix:")
+    logger.info(f"{folder_name}: confusion matrix:")
     logger.info(cm)
 
 
@@ -204,10 +191,10 @@ for folder_name in datasets:
 
     # predict the sample
     y_pred = loaded_model.predict(np.array([X_test[sample]]))
-    logger.info('classifier prediction: {}'.format(y_pred))
+    logger.info(f'{folder_name}: y_pred: {y_pred}')
 
     predicted_label = 0 if (y_pred[0][0] > y_pred[0][1]) else 1
-    logger.info('predected label: {}'.format(predicted_label))
+    logger.info(f'{folder_name}: predicted label: {predicted_label}')
 
 
     # getting the intermediate output
@@ -236,6 +223,7 @@ for folder_name in datasets:
     heat_map = last_layer_w[i, predicted_label] * conv_output1[i,:]
 
     # show the heat map
+    logger.info(f'{folder_name}: relu_fun (heatmap):')
     logger.info(relu_fun(heat_map).tolist()[:500])
 
 
@@ -269,4 +257,5 @@ for folder_name in datasets:
         return np.exp(x) / np.sum(np.exp(x), axis=0) * 1000
 
 
+    logger.info(f"{folder_name}: Printing Softmax")
     logger.info(softmax(relu_fun(heat_map)).tolist()[:500])
