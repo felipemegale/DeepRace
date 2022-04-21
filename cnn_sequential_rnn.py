@@ -83,6 +83,18 @@ for folder_name in datasets:
     model.add(Input(shape=(sequence_length,), dtype='int32'))
     model.add(Embedding(input_dim=vocabulary_size, output_dim=embedding_dim, input_length=sequence_length))
     model.add(Conv1D(128, kernel_size=3, padding='same', kernel_initializer='normal', activation='relu'))
+<<<<<<< HEAD
+    model.add(MaxPooling1D(pool_size=3, padding='valid'))
+    model.add(Conv1D(128, kernel_size=4, padding='same', kernel_initializer='normal', activation='relu'))
+    model.add(MaxPooling1D(pool_size=4, padding='valid'))
+    model.add(Conv1D(128, kernel_size=5, padding='same', kernel_initializer='normal', activation='relu'))
+    model.add(MaxPooling1D(pool_size=5, padding='valid'))
+    model.add(LSTM(256, return_sequences=True))
+    model.add(Flatten())
+    model.add(Dropout(0.2))
+    model.add(Dense(units=256,activation='relu'))
+    model.add(Dense(units=128, activation='relu'))
+=======
     model.add(MaxPooling1D(pool_size=2, padding='valid'))
     model.add(Conv1D(256, kernel_size=4, padding='same', kernel_initializer='normal', activation='relu'))
     model.add(MaxPooling1D(pool_size=4, padding='valid'))
@@ -90,6 +102,7 @@ for folder_name in datasets:
     model.add(LSTM(1024, return_sequences=True))
     model.add(Flatten())
     model.add(Dropout(0.5))
+>>>>>>> cd03270ccc743df556c9ec620124b2073ce18d89
     model.add(Dense(units=2, activation='softmax'))
     #inputs = Input(shape=(sequence_length,), dtype='int32')
     #embedding = Embedding(input_dim=vocabulary_size, output_dim=embedding_dim, input_length=sequence_length)(inputs)

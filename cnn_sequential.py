@@ -1,6 +1,7 @@
 '''
 Y_PRED [[0.8921792 0.1078208]]
 '''
+from operator import mod
 from random import randint
 from keras.layers import Input, Dense, Embedding, Conv1D
 from keras.layers import Flatten, Dropout
@@ -42,7 +43,6 @@ for folder_name in datasets:
     drop = 0.5
     epochs = 24
     batch_size = 4
-
     # this returns a tensor
     '''
     #--------------------------------------------------------------------------------------------------------------------
@@ -77,13 +77,18 @@ for folder_name in datasets:
     model = models.Sequential()
     model.add(Input(shape=(sequence_length,), dtype='int32'))
     model.add(Embedding(input_dim=vocabulary_size, output_dim=embedding_dim, input_length=sequence_length))
-    model.add(Conv1D(128, kernel_size=3, padding='same', kernel_initializer='normal', activation='relu'))
-    model.add(MaxPooling1D(pool_size=2, padding='valid'))
-    model.add(Conv1D(256, kernel_size=4, padding='same', kernel_initializer='normal', activation='relu'))
+    model.add(Conv1D(64, kernel_size=3, padding='same', kernel_initializer='normal', activation='relu'))
+    model.add(MaxPooling1D(pool_size=3, padding='valid'))
+    model.add(Conv1D(128, kernel_size=4, padding='same', kernel_initializer='normal', activation='relu'))
     model.add(MaxPooling1D(pool_size=4, padding='valid'))
-    model.add(Conv1D(512, kernel_size=5, padding='same', kernel_initializer='normal', activation='relu'))
+    model.add(Conv1D(256, kernel_size=5, padding='same', kernel_initializer='normal', activation='relu'))
+    model.add(MaxPooling1D(pool_size=5, padding='valid'))
+    #model.add(Conv1D(128, kernel_size=6, padding='same', kernel_initializer='normal', activation='relu'))
+    #model.add(MaxPooling1D(pool_size=6, padding='valid'))
     model.add(Flatten())
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.2))
+    model.add(Dense(units=256,activation='relu'))
+    model.add(Dense(units=128, activation='relu'))
     model.add(Dense(units=2, activation='softmax'))
     #inputs = Input(shape=(sequence_length,), dtype='int32')
     #embedding = Embedding(input_dim=vocabulary_size, output_dim=embedding_dim, input_length=sequence_length)(inputs)
