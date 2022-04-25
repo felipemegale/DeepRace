@@ -1,0 +1,85 @@
+2022-04-24 16:21:51,773 INFO OMP_Private: precision:
+2022-04-24 16:22:15,378 INFO OMP_Private: Loading data
+2022-04-24 16:23:43,029 INFO OMP_Private: sequence length = 35572
+2022-04-24 16:23:53,925 INFO OMP_Private: Loaded model from disk
+2022-04-24 16:24:12,651 INFO OMP_Private: EVALUATE: [0.1571715623140335, 0.9402079582214355]
+2022-04-24 16:24:12,652 INFO OMP_Private: LEN FILE NAMES: 5769
+2022-04-24 16:24:23,206 INFO OMP_Private => Y_PRED: [[0. 1.]
+ [0. 1.]
+ [0. 1.]
+ ...
+ [1. 0.]
+ [1. 0.]
+ [1. 0.]]
+2022-04-24 16:24:23,206 INFO OMP_Private: precision:
+2022-04-24 16:24:23,208 INFO 0.9361702127659575
+2022-04-24 16:24:23,209 INFO OMP_Private: recall:
+2022-04-24 16:24:23,210 INFO 0.9411764705882353
+2022-04-24 16:24:23,211 INFO OMP_Private: confusion matrix:
+2022-04-24 16:24:23,211 INFO [[557  36]
+ [ 33 528]]
+2022-04-24 16:24:23,215 INFO OMP_Private loaded model layers[5] output
+2022-04-24 16:24:23,215 INFO KerasTensor(type_spec=TensorSpec(shape=(None, 1, 512), dtype=tf.float32, name=None), name='max_pooling1d/Squeeze:0', description="created by layer 'max_pooling1d'")
+2022-04-24 16:24:23,381 INFO OMP_Private: y_pred: [[0.9966449 0.0033551]]
+2022-04-24 16:24:23,381 INFO OMP_Private: predicted label: 0
+2022-04-24 16:24:24,506 INFO OMP_Private: shape1: (512, 35572)
+2022-04-24 16:24:24,506 INFO OMP_Private: shape2: (512, 35572)
+2022-04-24 16:24:24,506 INFO OMP_Private: shape3: (512, 35572)
+2022-04-24 19:18:30,650 INFO OMP_Private: Loading data
+2022-04-24 19:20:00,701 INFO OMP_Private: sequence length = 35572
+2022-04-24 19:20:12,879 INFO OMP_Private: Loaded model from disk
+2022-04-24 19:20:32,209 INFO OMP_Private: EVALUATE: [0.2110188752412796, 0.915944516658783]
+2022-04-24 19:20:32,210 INFO OMP_Private: LEN FILE NAMES: 5769
+2022-04-24 19:20:42,865 INFO OMP_Private => Y_PRED: [[1. 0.]
+ [1. 0.]
+ [0. 1.]
+ ...
+ [0. 1.]
+ [0. 1.]
+ [1. 0.]]
+2022-04-24 19:20:42,866 INFO OMP_Private: precision:
+2022-04-24 19:20:42,868 INFO 0.9113924050632911
+2022-04-24 19:20:42,868 INFO OMP_Private: recall:
+2022-04-24 19:20:42,870 INFO 0.9130434782608695
+2022-04-24 19:20:42,870 INFO OMP_Private: f1:
+2022-04-24 19:20:42,872 INFO 0.9122171945701357
+2022-04-24 19:20:42,873 INFO OMP_Private: confusion matrix:
+2022-04-24 19:20:42,873 INFO [[553  49]
+ [ 48 504]]
+2022-04-24 19:20:42,878 INFO OMP_Private loaded model layers[5] output
+2022-04-24 19:20:42,878 INFO KerasTensor(type_spec=TensorSpec(shape=(None, 1, 512), dtype=tf.float32, name=None), name='max_pooling1d/Squeeze:0', description="created by layer 'max_pooling1d'")
+2022-04-24 19:20:43,091 INFO OMP_Private: y_pred: [[0.49344972 0.5065503 ]]
+2022-04-24 19:20:43,091 INFO OMP_Private: predicted label: 1
+2022-04-24 19:20:44,207 INFO OMP_Private: shape1: (512, 35572)
+2022-04-24 19:20:44,207 INFO OMP_Private: shape2: (512, 35572)
+2022-04-24 19:20:44,207 INFO OMP_Private: shape3: (512, 35572)
+2022-04-24 20:44:03,860 INFO OMP_Private: Loading data
+2022-04-24 20:45:29,254 INFO OMP_Private: sequence length = 35572
+2022-04-24 20:45:41,167 INFO OMP_Private: Loaded model from disk
+2022-04-24 20:46:00,076 INFO OMP_Private: EVALUATE: [0.21537065505981445, 0.9064124822616577]
+2022-04-24 20:46:00,077 INFO OMP_Private: LEN FILE NAMES: 5769
+2022-04-24 20:46:11,023 INFO OMP_Private => Y_PRED: [[1. 0.]
+ [1. 0.]
+ [0. 1.]
+ ...
+ [0. 1.]
+ [1. 0.]
+ [1. 0.]]
+2022-04-24 20:46:11,024 INFO OMP_Private: precision:
+2022-04-24 20:46:11,030 INFO 0.9092495636998255
+2022-04-24 20:46:11,030 INFO OMP_Private: recall:
+2022-04-24 20:46:11,034 INFO 0.902946273830156
+2022-04-24 20:46:11,034 INFO OMP_Private: f1:
+2022-04-24 20:46:11,037 INFO 0.9060869565217392
+2022-04-24 20:46:11,037 INFO OMP_Private: ACCURACY:
+2022-04-24 20:46:11,038 INFO 0.9064124783362218
+2022-04-24 20:46:11,041 INFO OMP_Private: confusion matrix:
+2022-04-24 20:46:11,041 INFO [[525  52]
+ [ 56 521]]
+2022-04-24 20:46:11,050 INFO OMP_Private loaded model layers[5] output
+2022-04-24 20:46:11,051 INFO KerasTensor(type_spec=TensorSpec(shape=(None, 1, 512), dtype=tf.float32, name=None), name='max_pooling1d/Squeeze:0', description="created by layer 'max_pooling1d'")
+2022-04-24 20:46:11,266 INFO OMP_Private: y_pred: [[0.99852777 0.00147221]]
+2022-04-24 20:46:11,267 INFO OMP_Private: predicted label: 0
+2022-04-24 20:46:12,381 INFO OMP_Private: shape1: (512, 35572)
+2022-04-24 20:46:12,381 INFO OMP_Private: shape2: (512, 35572)
+2022-04-24 20:46:12,381 INFO OMP_Private: shape3: (512, 35572)
