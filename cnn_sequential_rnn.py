@@ -28,21 +28,21 @@ def relu_fun(list_):
     return (abs(list_) + list_) / 2
 
 datasets=["OMP_Critical", "OMP_Private", "POSIX"]
-folder_name = "POSIX"
-
+# folder_name = "POSIX"
+folder_name = ""
 logger = setup_logger(f'{folder_name}_seq_rnn_model', f'{folder_name}_seq_rnn_model')
+model_json_file = f'cnn_model_{folder_name}.json' if folder_name else "cnn_model.json"
+model_h5_file = f'cnn_model_{folder_name}.h5' if folder_name else "cnn_model.h5"
+
 logger.info(f'Loading data from {folder_name}')
 x, y, vocabulary, vocabulary_inv = load_data(avg_len=False, load_saved_data=False, load_testdata=False, folder_name=folder_name)
-# X_test = x
-# y_test = y
 X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=randint(1,100))
+
 print("X_train", X_train.shape)
 print("y_train", y_train.shape)
 print("X_test", X_test.shape)
 print("y_test", y_test.shape)
-#sys.exit("BREAKING")
-#print(X_train.shape)
-#sys.exit("Breaking")
+
 sequence_length = x.shape[1]
 print(sequence_length)
 logger.info(f'{folder_name}: sequence length = {sequence_length}')
@@ -55,7 +55,6 @@ epochs = 30
 batch_size = 32
 # this returns a tensor
 #--------------------------------------------------------------------------------------------------------------------
-'''
 print("Creating Model...")
 logger.info("Creating Model...")
 
@@ -82,8 +81,6 @@ model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accurac
 # Model summary
 logger.info(f'{folder_name} model summary:')
 logger.info(model.summary())
-#sys.exit("TESTING")
-
 
 logger.info(f"{folder_name}: Traning Model")
 model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_split=0.2, verbose=1)  # starts training
@@ -91,22 +88,22 @@ model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, validation_spl
 # Storing the model for future use
 # serialize model to JSON
 model_json = model.to_json()
-with open(f"cnn_sequential_rnn_model_{folder_name}.json", "w") as json_file:
+with open(model_json_file, "w") as json_file:
     json_file.write(model_json)
 # serialize weights to HDF5
-model.save_weights(f"cnn_sequential_rnn_model_{folder_name}.h5")
+model.save_weights(model_h5_file)
 logger.info(f"{folder_name}: Saved model to disk")
-'''
+
 adam = Adam(lr=1e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 
 # load json and create model
-json_file = open(f'cnn_sequential_rnn_model_{folder_name}.json', 'r')
+json_file = open(model_json_file, 'r')
 loaded_model_json = json_file.read()
 json_file.close()
 
 loaded_model = model_from_json(loaded_model_json)
 # load weights into new model
-loaded_model.load_weights(f"cnn_sequential_rnn_model_{folder_name}.h5")
+loaded_model.load_weights(model_h5_file)
 logger.info(f"{folder_name}: Loaded model from disk")
 
 loaded_model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
@@ -116,11 +113,6 @@ score = loaded_model.evaluate(X_test, y_test, verbose=1)
 logger.info(f"{folder_name}: EVALUATE: {score}")
 
 logger.info(f"{folder_name}: LEN FILE NAMES: {len(file_names)}")
-
-# for i, x in enumerate(file_names):
-#     print(x)
-#     print(i)
-#     print(loaded_model.predict(X_test[i:i+1]))
 
 y_pred = np.round(loaded_model.predict(X_test))
 logger.info(f"{folder_name} => Y_PRED: {y_pred}")
